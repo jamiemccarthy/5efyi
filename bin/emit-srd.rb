@@ -33,8 +33,54 @@ class PDF::Reader::ColumnarPageLayout < PDF::Reader::PageLayout
 end
 
 class PDF::Reader::ColumnarReceiver < PDF::Reader::PageTextReceiver
-  def two_column_content
-    PDF::Reader::ColumnarPageLayout.new(@characters, @device_mediabox).to_s
+  def two_column_runs
+    PDF::Reader::ColumnarPageLayout.new(@characters, @device_mediabox).runs_in_columnar_order
+  end
+end
+
+class TextRunWriter
+  def self.run_text_clean(run)
+    run_text = run.text.dup
+    run_text.gsub!(/[\s\u00a0]+/, " ") # if new_font_size < 10 ??
+    run_text.gsub!(/\s*-\u00ad\u2010\u2011?\s*/, "-")
+    run_text.strip!
+    run_text
+  end
+
+  def self.run_break?(run)
+    # Should we break to a new page starting with this run?
+    run.font_size >= 25
+  end
+
+  def self.break_into_sections(runs)
+    pages = [[]]
+    runs.each do |run|
+      pages << [] if run_break?(run)
+      pages[-1] << run
+    end
+    pages
+  end
+
+  def self.title_to_filename(title, dir)
+    File.join(dir, title.downcase.gsub(/\s+/, "-"))
+  end
+
+  def self.write_section_file(sections, filename)
+    puts "writing #{filename}"
+    File.open(filename, "w", 0644) do |io|
+      io.write(sections.map { |run| run_text_clean(run) }.join("\n"))
+    end
+  end
+
+  def self.write(sections, dir = Dir.pwd)
+    sections.each do |section|
+      section_run = section.find { |run| run_break?(run) }
+      next unless section_run
+
+      section_title = run_text_clean(section_run)
+      section_filename = title_to_filename(section_title, dir)
+      write_section_file( section.reject { |run| run == section_run }, section_filename)
+    end
   end
 end
 
@@ -44,12 +90,16 @@ end
 
 def emit_stuff(reader)
   pages = reader.pages
+  runs = []
   pages.each_index do |page_num|
-    next if page_num == 0
+    next if page_num < 2
+    next if page_num > 20
     receiver = PDF::Reader::ColumnarReceiver.new
     pages[page_num].walk(receiver)
-    puts receiver.two_column_content
+    runs.concat(receiver.two_column_runs)
   end
+  sections = TextRunWriter.break_into_sections(runs)
+  TextRunWriter.write(sections)
 end
 
 reader = get_reader
