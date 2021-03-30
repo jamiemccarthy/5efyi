@@ -89,14 +89,14 @@ class TextRunWriter
 
   def self.write(sections, dir = Dir.pwd)
     Dir.mkdir(dir, 0755) unless Dir.exist?(dir)
-    sections.each do |section|
-      section_title_runs = section.select { |run| run_break?(run) }
+    sections.each do |section_runs|
+      section_title_runs = section_runs.select { |run| run_break?(run) }
       next unless section_title_runs
 
       section_title = section_title_runs.map { |run| run_text_clean(run) }.join(" ")
       section_filename = title_to_filename(section_title, dir)
-      section_nontitle_runs = section.reject { |run| section_title_runs.include? run }
-      write_section_file(section_filename, section_title, section_nontitle_runs)
+      #section_nontitle_runs = section_runs.reject { |run| section_title_runs.include? run }
+      write_section_file(section_filename, section_title, section_runs)
     end
   end
 end
