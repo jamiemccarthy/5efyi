@@ -53,10 +53,19 @@ class TextRunWriter
   end
 
   def self.break_into_sections(runs)
-    pages = [[]]
+    pages = []
+    last_breaking_runs = []
     runs.each do |run|
-      pages << [] if run_break?(run)
-      pages[-1] << run
+      if run_break?(run)
+        last_breaking_runs << run
+      else
+        if last_breaking_runs.count > 0
+          pages << []
+          pages[-1].concat(last_breaking_runs)
+          last_breaking_runs = []
+        end
+        pages[-1] << run if pages[-1]
+      end
     end
     pages
   end
@@ -66,10 +75,13 @@ class TextRunWriter
   end
 
   def self.title_to_filename(title, dir)
-    File.join(dir, subdir, title.downcase.gsub(/\s+/, "-"))
+    filename = title.downcase.gsub(/[\s_:-]+/m, "-")
+    filename.gsub!(/^-+/, "")
+    filename.gsub!(/-+$/, "")
+    File.join(dir, subdir, filename)
   end
 
-  def self.write_section_file(sections, filename)
+  def self.write_section_file(filename, title, sections)
     File.open(filename, "w", 0644) do |io|
       io.write(sections.map { |run| run_text_clean(run) }.join("\n"))
     end
@@ -78,12 +90,13 @@ class TextRunWriter
   def self.write(sections, dir = Dir.pwd)
     Dir.mkdir(dir, 0755) unless Dir.exist?(dir)
     sections.each do |section|
-      section_run = section.find { |run| run_break?(run) }
-      next unless section_run
+      section_title_runs = section.select { |run| run_break?(run) }
+      next unless section_title_runs
 
-      section_title = run_text_clean(section_run)
+      section_title = section_title_runs.map { |run| run_text_clean(run) }.join(" ")
       section_filename = title_to_filename(section_title, dir)
-      write_section_file( section.reject { |run| run == section_run }, section_filename)
+      section_nontitle_runs = section.reject { |run| section_title_runs.include? run }
+      write_section_file(section_filename, section_title, section_nontitle_runs)
     end
   end
 end
