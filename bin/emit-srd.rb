@@ -61,18 +61,22 @@ class TextRunWriter
     pages
   end
 
+  def self.subdir
+    "public"
+  end
+
   def self.title_to_filename(title, dir)
-    File.join(dir, title.downcase.gsub(/\s+/, "-"))
+    File.join(dir, subdir, title.downcase.gsub(/\s+/, "-"))
   end
 
   def self.write_section_file(sections, filename)
-    puts "writing #{filename}"
     File.open(filename, "w", 0644) do |io|
       io.write(sections.map { |run| run_text_clean(run) }.join("\n"))
     end
   end
 
   def self.write(sections, dir = Dir.pwd)
+    Dir.mkdir(dir, 0755) unless Dir.exist?(dir)
     sections.each do |section|
       section_run = section.find { |run| run_break?(run) }
       next unless section_run
@@ -93,7 +97,6 @@ def emit_stuff(reader)
   runs = []
   pages.each_index do |page_num|
     next if page_num < 2
-    next if page_num > 20
     receiver = PDF::Reader::ColumnarReceiver.new
     pages[page_num].walk(receiver)
     runs.concat(receiver.two_column_runs)
