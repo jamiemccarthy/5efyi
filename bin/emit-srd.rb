@@ -18,7 +18,7 @@ class PDF::Reader::ColumnarPageLayout < PDF::Reader::PageLayout
   # we sort the left column "above" the right column. This
   # ignores the order defined by TextRun#<=>
   def run_sort_val(run)
-    run.y + (run.x < 180 ? 10000 : 0)
+    run.y + (run.x < 325 ? 10000 : 0)
   end
   
   def runs_in_columnar_order
@@ -30,23 +30,6 @@ class PDF::Reader::ColumnarPageLayout < PDF::Reader::PageLayout
 
   def run_groups
     runs_in_columnar_order.slice_when { |run_a, run_b| run_a.font_size != run_b.font_size }
-  end
-
-  def to_s
-    text = ""
-    last_font_size = nil
-    runs_in_columnar_order.each do |run|
-      run_text = run.text.dup
-      new_font_size = run.font_size
-      run_text.gsub!(/[\s\u00a0]+/, " ") # if new_font_size < 10 ??
-      run_text.gsub!(/\s*-\u00ad\u2010\u2011?\s*/, "-")
-      run_text.strip!
-      separator = last_font_size == new_font_size ? " " : "\n"
-      separator = "" if text.empty?
-      text = text + separator + run_text
-      last_font_size = new_font_size
-    end
-    text
   end
 end
 
@@ -84,6 +67,12 @@ class TextRunWriter
     "public"
   end
 
+  def self.mkdirs(dir, subdir)
+    Dir.mkdir(dir, 0755) unless Dir.exist?(dir)
+    abs_subdir = File.join(dir, subdir)
+    Dir.mkdir(abs_subdir, 0755) unless Dir.exist?(abs_subdir)
+  end
+
   def self.title_to_filename(title, dir)
     filename = title.downcase.gsub(/[\s_:-]+/m, "-")
     filename.gsub!(/^-+/, "")
@@ -101,7 +90,7 @@ class TextRunWriter
   end
 
   def self.write(sections, dir = Dir.pwd)
-    Dir.mkdir(dir, 0755) unless Dir.exist?(dir)
+    mkdirs(dir, subdir)
     sections.each do |section_runs|
       section_title_runs = section_runs.select { |run| run_break?(run) }
       # Skip any initial section that lacks a title ("If you note any errors...")
