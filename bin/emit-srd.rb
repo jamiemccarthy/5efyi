@@ -63,9 +63,6 @@ class TextRunWriter
     run_text.gsub!(/\s*-\u00ad\u2010\u2011?\s*/, "-")
     run_text.strip!
     run_text
-    ###TODO
-    run_text.chomp!
-    "#{run.font_size} #{run_text}\n"
   end
 
   def self.run_break?(run)
@@ -97,7 +94,9 @@ class TextRunWriter
   def self.write_section_file(filename, title, sections)
     sections_by_size = sections.slice_when { |run_a, run_b| run_a.font_size != run_b.font_size }
     File.open(filename, "w", 0644) do |io|
-      io.write(sections.map { |run| run_text_clean(run) })
+      sections_by_size.each do |runs|
+        io.write(runs.map { |run| run_text_clean(run) }.join(" "), "\n")
+      end
     end
   end
 
