@@ -1,17 +1,35 @@
 #!/usr/bin/env ruby
 
+# 10 and 8 are sidebar title and sidebar text
+# 9 is ordinary text
+# 11 is a typo for 12
+# 12 is a section header, like "Proficiencies" or a spell name
+# 13 is a bigger section header, like a class feature ("Spellcasting" or "Wild Shape"),
+#    "Spell Slots," "Wizard Spells," "Outer Planes"
+# 18 is an even bigger section header, like "Class Features", "Armor", "Making an Attack"
+# 25 is the title of a "chapter" (not a book chapter), like "Feats", "Fighter", "Equipment"
+
 require 'pdf-reader'
 require 'byebug'
 
 class PDF::Reader::ColumnarPageLayout < PDF::Reader::PageLayout
   # Return the runs in the order generally used by the SRD,
-  # excluding the footer generally used by the SRD. This
+  # excluding the footer generally used by the SRD. Basically
+  # we sort the left column "above" the right column. This
   # ignores the order defined by TextRun#<=>
+  def run_sort_val(run)
+    run.y + (run.x < 180 ? 10000 : 0)
+  end
+  
   def runs_in_columnar_order
     @runs.
       select { |r| r.y >= 90 }. # exclude page footer ("Not for resale" thru page number)
-      sort { |a,b| (a.x < 180 ? 10000 : 0) + a.y <=> (b.x < 180 ? 10000 : 0) + b.y }. # sort left column above right column
-      reverse # PDF y column extends from 0 up
+      sort { |a,b| run_sort_val(a) <=> run_sort_val(b) }.
+      reverse # In a PDF, the y column extends from 0 up
+  end
+
+  def run_groups
+    runs_in_columnar_order.slice_when { |run_a, run_b| run_a.font_size != run_b.font_size }
   end
 
   def to_s
@@ -33,8 +51,8 @@ class PDF::Reader::ColumnarPageLayout < PDF::Reader::PageLayout
 end
 
 class PDF::Reader::ColumnarReceiver < PDF::Reader::PageTextReceiver
-  def two_column_runs
-    PDF::Reader::ColumnarPageLayout.new(@characters, @device_mediabox).runs_in_columnar_order
+  def two_column_run_groups
+    PDF::Reader::ColumnarPageLayout.new(@characters, @device_mediabox).run_groups.to_a
   end
 end
 
@@ -45,6 +63,9 @@ class TextRunWriter
     run_text.gsub!(/\s*-\u00ad\u2010\u2011?\s*/, "-")
     run_text.strip!
     run_text
+    ###TODO
+    run_text.chomp!
+    "#{run.font_size} #{run_text}\n"
   end
 
   def self.run_break?(run)
@@ -52,22 +73,14 @@ class TextRunWriter
     run.font_size >= 25
   end
 
-  def self.break_into_sections(runs)
-    pages = []
-    last_breaking_runs = []
-    runs.each do |run|
-      if run_break?(run)
-        last_breaking_runs << run
-      else
-        if last_breaking_runs.count > 0
-          pages << []
-          pages[-1].concat(last_breaking_runs)
-          last_breaking_runs = []
-        end
-        pages[-1] << run if pages[-1]
-      end
+  def self.break_into_sections(run_groups)
+    sections = [[]]
+    run_groups.each do |run_group|
+      next if run_group.count < 1
+      sections << [] if run_group[0].font_size == 25
+      sections[-1].concat(run_group)
     end
-    pages
+    sections
   end
 
   def self.subdir
@@ -82,8 +95,9 @@ class TextRunWriter
   end
 
   def self.write_section_file(filename, title, sections)
+    sections_by_size = sections.slice_when { |run_a, run_b| run_a.font_size != run_b.font_size }
     File.open(filename, "w", 0644) do |io|
-      io.write(sections.map { |run| run_text_clean(run) }.join("\n"))
+      io.write(sections.map { |run| run_text_clean(run) })
     end
   end
 
@@ -91,11 +105,11 @@ class TextRunWriter
     Dir.mkdir(dir, 0755) unless Dir.exist?(dir)
     sections.each do |section_runs|
       section_title_runs = section_runs.select { |run| run_break?(run) }
-      next unless section_title_runs
+      # Skip any initial section that lacks a title ("If you note any errors...")
+      next unless section_title_runs.count > 0
 
       section_title = section_title_runs.map { |run| run_text_clean(run) }.join(" ")
       section_filename = title_to_filename(section_title, dir)
-      #section_nontitle_runs = section_runs.reject { |run| section_title_runs.include? run }
       write_section_file(section_filename, section_title, section_runs)
     end
   end
@@ -107,14 +121,14 @@ end
 
 def emit_stuff(reader)
   pages = reader.pages
-  runs = []
+  run_groups = []
   pages.each_index do |page_num|
     next if page_num < 2
     receiver = PDF::Reader::ColumnarReceiver.new
     pages[page_num].walk(receiver)
-    runs.concat(receiver.two_column_runs)
+    run_groups.concat(receiver.two_column_run_groups)
   end
-  sections = TextRunWriter.break_into_sections(runs)
+  sections = TextRunWriter.break_into_sections(run_groups)
   TextRunWriter.write(sections)
 end
 
