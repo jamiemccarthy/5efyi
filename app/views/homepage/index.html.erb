@@ -1,2 +1,7 @@
-<h1>Homepage#index</h1>
-<p>Find me in app/views/homepage/index.html.erb</p>
+<h1>5e Rules</h1>
+
+<ul>
+  <% controller.srd_page_files.each do |file| %>
+    <li><a href="<%= file %>"><%= file %></a></li>
+  <% end %>
+</ul>

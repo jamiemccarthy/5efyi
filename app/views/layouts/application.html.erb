@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Fiveefyi</title>
+    <title>5e.fyi - the 5th edition rules</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
@@ -10,6 +10,10 @@
   </head>
 
   <body>
+    <%= render "layouts/header" %>
+
     <%= yield %>
+
+    <%= render "layouts/footer" %>
   </body>
 </html>
