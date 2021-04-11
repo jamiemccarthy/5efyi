@@ -65,6 +65,7 @@ module SRD5Section
 
     def self.get_subclass(section_title_runs)
       # TODO: fix this, it doesn't work for e.g. "Beyond 1st level" or "Using abilityScores"
+      # or "Appendix ph-b:Fantasy-historicalPantheons" haha
       subclass = section_title_runs.map { |run| run_text_clean(run).downcase.capitalize }.join("")
       puts "subclass: #{subclass}"
       Object.const_get("SRD5Section::#{subclass}") rescue nil || SRD5Section::Base
@@ -96,11 +97,11 @@ module SRD5Section
       filename = title.downcase.gsub(/[\s_:-]+/m, "-")
       filename.gsub!(/^-+/, "")
       filename.gsub!(/-+$/, "")
-      File.join(dir, subdir, filename)
+      File.join(dir, subdirs, filename)
     end
 
-    def self.subdir
-      "public"
+    def self.subdirs
+      ["public", "srd"]
     end
 
     def self.run_text_clean(run)
@@ -117,8 +118,11 @@ module SRD5Section
 
     def self.mkdirs
       Dir.mkdir(get_section_dir, 0755) unless Dir.exist?(get_section_dir)
-      abs_subdir = File.join(get_section_dir, subdir)
-      Dir.mkdir(abs_subdir, 0755) unless Dir.exist?(abs_subdir)
+      abs_subdir = get_section_dir
+      subdirs.each do |subdir|
+        abs_subdir = File.join(abs_subdir, subdir)
+        Dir.mkdir(abs_subdir, 0755) unless Dir.exist?(abs_subdir)
+      end
     end
 
     def write_file
