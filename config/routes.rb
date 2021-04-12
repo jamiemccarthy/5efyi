@@ -6,4 +6,5 @@ Rails.application.routes.draw do
 
   get '/', to: 'homepage#index'
   get '/health_check', to: 'health_check/health_check#index'
+  get '(:ogl_name)', to: 'ogl_content#show'
 end
