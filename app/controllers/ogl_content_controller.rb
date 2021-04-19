@@ -3,16 +3,16 @@ class OglContentController < ApplicationController
 
   FILENAME_REGEX = Regexp.new("\\A[a-z-]+\\z").freeze
 
-  def show
-    filename = ogl_content_params["ogl_name"]
-    return :not_found unless filename.match? FILENAME_REGEX
-
-    ogl_file[filename] ||= File.read(File.join(Rails.public_dir, "srd", filename))
-
-    render file_contents: ogl_file[filename]
+  def ogl_content_params
+    p = params.permit(:ogl_name)
+    if p["ogl_name"] && !p["ogl_name"].match?(FILENAME_REGEX)
+      raise Sprockets::FileNotFound, "unknown filename" # TODO this throws a 500, is there some non-ActiveRecord way to throw a 404?
+      # p.delete("ogl_name")
+    end
+    p
   end
 
-  def ogl_content_params
-    params.require(:ogl_name)
+  def ogl_name_abspath
+    Rails.public_path.join("srd", ogl_content_params["ogl_name"])
   end
 end
