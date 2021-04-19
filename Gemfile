@@ -21,4 +21,5 @@ end
 group :development do
   gem "pdf-reader", "~> 2.4.2"
   gem "listen", "~> 3.5"
+  gem "web-console", "~> 4.1.0"
 end
