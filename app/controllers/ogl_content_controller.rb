@@ -5,7 +5,12 @@ class OglContentController < ApplicationController
   FILENAME_REGEX_ANCHORED = Regexp.new("\\A[a-z0-9-]+\\z").freeze
 
   def show
-    render status: :not_found, html: "Not found" unless ogl_file_abspath
+    expires_in 24.hours, public: true
+    if !ogl_file_abspath
+      render status: :not_found, html: "Not found"
+    else
+      fresh_when(last_modified: ogl_file_last_modified)
+    end
   end
 
   def is_ogl?
@@ -15,6 +20,12 @@ class OglContentController < ApplicationController
   def ogl_content
     filename = ogl_file_abspath
     filename ? File.read(filename) : nil
+  end
+
+  protected
+
+  def ogl_file_last_modified
+    File.mtime(ogl_file_abspath)
   end
 
   def ogl_file_abspath
