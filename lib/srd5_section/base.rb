@@ -60,6 +60,39 @@ module Srd5Section
       run_text
     end
 
+    def self.section_runs_tag(runs)
+      # 10 and 8 are sidebar title and sidebar text
+      # 9 is ordinary text
+      # 11 is a typo for 12
+      # 12 is a section header, like "Proficiencies" or a spell name
+      # 13 is a bigger section header, like a class feature ("Spellcasting" or "Wild Shape"),
+      #    "Spell Slots," "Wizard Spells," "Outer Planes"
+      # 18 is an even bigger section header, like "Class Features", "Armor", "Making an Attack"
+      # 25 is the title of a "chapter" (not a book chapter), like "Feats", "Fighter", "Equipment"
+      case runs[0].font_size
+      when 11, 12; "h4"
+      when 13; "h3"
+      when 18; "h2"
+      when 25; "h1"
+      else "p"
+      end
+    end
+
+    def self.run_text_html(run)
+      run_text = nil
+      run_text_clean = run_text_clean(run)
+      run_text_cap_sentence = nil
+      if matches = run_text_clean.match(/^(?<capsentence>(?:[A-Z][\w-]+)(?: [A-Z][\w-]+)*)(?<rest>\..*)$/)
+        run_text = "</p><p><b>#{matches[:capsentence]}</b>#{matches[:rest]}"
+      else
+        run_text = run_text_clean
+      end
+      # TODO check for "\t" leading run.text followed by a short sentence
+      # with capitalized words ending in a period. If so, bold it and add
+      # a paragraph break
+      run_text
+    end
+
     def section_runs_by_size
       @section_runs.slice_when { |run_a, run_b| run_a.font_size != run_b.font_size }
     end
@@ -76,9 +109,14 @@ module Srd5Section
     def write_file
       self.class.mkdirs
       File.open(section_filename, "w", 0644) do |io|
-        section_runs_by_size.each do |runs|
-          io.write(runs.map { |run| self.class.run_text_clean(run) }.join(" "), "\n")
-        end
+        io.write(
+          section_runs_by_size.map do |runs|
+            tag = self.class.section_runs_tag(runs)
+            "<#{tag}>" +
+              runs.map { |run| self.class.run_text_html(run) }.join("\n") +
+              "</#{tag}>"
+          end.join("\n")
+        )
       end
     end
 
