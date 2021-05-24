@@ -3,9 +3,11 @@ require 'srd5_section/base'
 require 'srd5_section/races'
 require 'srd5_section/utility'
 
+NUMBER_OF_SRD_OGL_V11_PAGES = 403
+
 namespace :fiveefyi do
   desc "Emit a formatted version of the SRD PDF into the public/srd folder"
-  task srd_write: :environment do
+  task :srd_write, [:pages] => :environment do |task_name, args|
 
     # 10 and 8 are sidebar title and sidebar text
     # 9 is ordinary text
@@ -47,11 +49,20 @@ namespace :fiveefyi do
       PDF::Reader.new(File.open("SRD-OGL_V5.1.pdf", "rb"))
     end
 
-    def emit_stuff(reader)
+    def get_page_list(args)
+      return (1..NUMBER_OF_SRD_OGL_V11_PAGES).to_a if args.pages.nil?
+      [args.pages, args.extras].flatten.
+        map { |p| /^(\d+)-(\d+)/ =~ p ? ($1..$2).to_a : p }.flatten.compact.
+        map(&:to_i).sort.uniq
+    end
+
+    def emit_stuff(reader, args)
       pages = reader.pages
+      page_list = get_page_list(args)
       run_groups = []
       pages.each_index do |page_num|
         next if page_num < 2
+        next unless page_list.include? page_num
         receiver = PDF::Reader::ColumnarReceiver.new
         pages[page_num].walk(receiver)
         run_groups.concat(receiver.two_column_run_groups)
@@ -64,7 +75,7 @@ namespace :fiveefyi do
     end
 
     reader = get_reader
-    emit_stuff(reader)
+    emit_stuff(reader, args)
 
   end
 
