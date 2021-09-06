@@ -5,7 +5,7 @@ ruby "3.0.1"
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails', branch: 'main'
 #gem "rails", "~> 7.0.0.alpha"
-gem "rails", github: "rails/rails", ref: "835f4bf5674b857f41e207c7e678727232db37b6"
+gem "rails", github: "rails/rails", ref: "f967bce8a8d0abece8f74e16b67daace9c664ac3"
 # Use Puma as the app server
 gem "puma", "~> 5.0"
 # Manage modern JavaScript using ESM without transpiling or bundling

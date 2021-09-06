@@ -1,7 +1,7 @@
 GIT
   remote: https://github.com/rails/rails.git
-  revision: 835f4bf5674b857f41e207c7e678727232db37b6
-  ref: 835f4bf5674b857f41e207c7e678727232db37b6
+  revision: f967bce8a8d0abece8f74e16b67daace9c664ac3
+  ref: f967bce8a8d0abece8f74e16b67daace9c664ac3
   specs:
     actioncable (7.0.0.alpha)
       actionpack (= 7.0.0.alpha)
@@ -61,7 +61,7 @@ GIT
       i18n (>= 1.6, < 2)
       minitest (>= 5.1)
       tzinfo (~> 2.0)
-      zeitwerk (~> 2.5.0.beta2)
+      zeitwerk (~> 2.5.0.beta3)
     rails (7.0.0.alpha)
       actioncable (= 7.0.0.alpha)
       actionmailbox (= 7.0.0.alpha)
@@ -197,7 +197,7 @@ GEM
     websocket-extensions (0.1.5)
     xpath (3.2.0)
       nokogiri (~> 1.8)
-    zeitwerk (2.5.0.beta2)
+    zeitwerk (2.5.0.beta3)
 
 PLATFORMS
   x86_64-linux
