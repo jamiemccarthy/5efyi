@@ -3,7 +3,7 @@
 ```
 gem install bundler
 bundle install
-bin/emit-srd.rb
+rake fiveefyi:srd_write
 ```
 
 On production server:
