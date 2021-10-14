@@ -29,8 +29,10 @@ gem "jbuilder", "~> 2.7"
 # Use Active Model has_secure_password
 # gem "bcrypt", "~> 3.1.7"
 
-gem "lograge", "~> 0.11"
+# Used by my application
 gem "health_check", "~> 3.1"
+gem "http", "~> 5.0.4"
+gem "lograge", "~> 0.11"
 
 group :development, :test do
   # Call "byebug" anywhere in the code to stop execution and get a debugger console

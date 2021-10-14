@@ -1,9 +1,14 @@
+require 'http'
 require 'pdf-reader'
 require 'srd5_section/base'
 require 'srd5_section/races'
 require 'srd5_section/utility'
 
-NUMBER_OF_SRD_OGL_V11_PAGES = 403
+SRD_OGL_NUM_PAGES = 403
+SRD_OGL_SOURCE_URL = "https://media.wizards.com/2016/downloads/DND/SRD-OGL_V5.1.pdf"
+SRD_OGL_FILE_NAME = Rails.root.join("tmp", "SRD-OGL_V5.1.pdf")
+SRD_OGL_FILE_SIZE = 4857826
+SRD_OGL_FILE_SHA256 = "d3f94417d2532f42a5abaec07e71a59007bf6cc46992c6458be6667f7a9f1e34"
 
 namespace :fiveefyi do
   desc "Emit a formatted version of the SRD PDF into the public/srd folder"
@@ -45,12 +50,32 @@ namespace :fiveefyi do
       end
     end
 
+    def srd_ogl_file_present?
+      File.exist?(SRD_OGL_FILE_NAME) &&
+        File.size(SRD_OGL_FILE_NAME) == SRD_OGL_FILE_SIZE &&
+        Digest::SHA256.file(SRD_OGL_FILE_NAME) == SRD_OGL_FILE_SHA256
+    end
+
     def get_reader
-      PDF::Reader.new(File.open("SRD-OGL_V5.1.pdf", "rb"))
+      if !srd_ogl_file_present?
+        puts "Downloading the SRD OGL file..."
+        File.delete(SRD_OGL_FILE_NAME) rescue Errno::ENOENT
+        File.open(SRD_OGL_FILE_NAME, "wb") do |file|
+          response = HTTP.get(SRD_OGL_SOURCE_URL)
+          while partial = response.readpartial
+            file.write partial
+          end
+        end
+        if !srd_ogl_file_present?
+          raise ArgumentError, "SRD OGL File was not successfully downloaded"
+        end
+        puts "Downloaded."
+      end
+      PDF::Reader.new(File.open(SRD_OGL_FILE_NAME, "rb"))
     end
 
     def get_page_list(args)
-      return (1..NUMBER_OF_SRD_OGL_V11_PAGES).to_a if args.pages.nil?
+      return (1..SRD_OGL_NUM_PAGES).to_a if args.pages.nil?
       [args.pages, args.extras].flatten.
         map { |p| /^(\d+)-(\d+)/ =~ p ? ($1..$2).to_a : p }.flatten.compact.
         map(&:to_i).sort.uniq
