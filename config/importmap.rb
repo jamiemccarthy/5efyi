@@ -19,3 +19,6 @@ Rails.application.config.importmap.draw do
   # //= link_tree ../../../vendor/assets/javascripts .js
   # pin_all_from "vendor/assets/javascripts"
 end
+pin "@hotwired/stimulus", to: "stimulus.js"
+pin "@hotwired/stimulus-loading", to: "stimulus-loading.js"
+pin_all_from "app/javascript/controllers", under: "controllers"
