@@ -8,4 +8,9 @@ Rails.application.configure do
       time: Time.now.strftime("%FT%T")
     }
   end
+  config.lograge.ignore_custom = lambda do |event|
+    # Only log 1/1000th of health checks
+    false if event.payload[:controller] == "HealthCheck::HealthCheckController" && rand() < 0.001
+    true
+  end
 end
