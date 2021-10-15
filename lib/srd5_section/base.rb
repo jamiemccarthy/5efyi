@@ -1,5 +1,4 @@
 module Srd5Section
-
   class Base
     attr_accessor :section_runs, :section_title, :section_filename
 
@@ -8,7 +7,7 @@ module Srd5Section
       # Skip any initial section that lacks a title ("If you note any errors...")
       return nil unless section_title_runs.count > 0
 
-      self.get_subclass(section_title_runs).new(section_runs)
+      get_subclass(section_title_runs).new(section_runs)
     end
 
     def self.get_subclass(section_title_runs)
@@ -16,7 +15,11 @@ module Srd5Section
       # or "Appendix ph-b:Fantasy-historicalPantheons" haha
       subclass = section_title_runs.map { |run| run_text_clean(run).downcase.capitalize }.join("")
       puts "subclass: #{subclass}"
-      Object.const_get("Srd5Section::#{subclass}") rescue nil || Srd5Section::Base
+      begin
+        Object.const_get("Srd5Section::#{subclass}")
+      rescue
+        nil || Srd5Section::Base
+      end
     end
 
     def self.get_section_title_runs(section_runs)
@@ -70,10 +73,10 @@ module Srd5Section
       # 18 is an even bigger section header, like "Class Features", "Armor", "Making an Attack"
       # 25 is the title of a "chapter" (not a book chapter), like "Feats", "Fighter", "Equipment"
       case runs[0].font_size
-      when 11, 12; "h4"
-      when 13; "h3"
-      when 18; "h2"
-      when 25; "h1"
+      when 11, 12 then "h4"
+      when 13 then "h3"
+      when 18 then "h2"
+      when 25 then "h1"
       else "p"
       end
     end
@@ -83,14 +86,13 @@ module Srd5Section
       run_text_clean = run_text_clean(run)
       run_text_cap_sentence = nil
       if matches = run_text_clean.match(/^(?<capsentence>(?:[A-Z][\w-]+)(?: [A-Z][\w-]+)*)(?<rest>\..*)$/)
-        run_text = "</p><p><b>#{matches[:capsentence]}</b>#{matches[:rest]}"
+        "</p><p><b>#{matches[:capsentence]}</b>#{matches[:rest]}"
       else
-        run_text = run_text_clean
+        run_text_clean
       end
       # TODO check for "\t" leading run.text followed by a short sentence
       # with capitalized words ending in a period. If so, bold it and add
       # a paragraph break
-      run_text
     end
 
     def section_runs_by_size
@@ -98,17 +100,17 @@ module Srd5Section
     end
 
     def self.mkdirs
-      Dir.mkdir(get_section_dir, 0755) unless Dir.exist?(get_section_dir)
+      Dir.mkdir(get_section_dir, 0o755) unless Dir.exist?(get_section_dir)
       abs_subdir = get_section_dir
       subdirs.each do |subdir|
         abs_subdir = File.join(abs_subdir, subdir)
-        Dir.mkdir(abs_subdir, 0755) unless Dir.exist?(abs_subdir)
+        Dir.mkdir(abs_subdir, 0o755) unless Dir.exist?(abs_subdir)
       end
     end
 
     def write_file
       self.class.mkdirs
-      File.open(section_filename, "w", 0644) do |io|
+      File.open(section_filename, "w", 0o644) do |io|
         io.write(
           section_runs_by_size.map do |runs|
             tag = self.class.section_runs_tag(runs)
@@ -125,5 +127,4 @@ module Srd5Section
       run.font_size >= 25
     end
   end
-
 end

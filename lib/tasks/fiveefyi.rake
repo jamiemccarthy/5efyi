@@ -1,8 +1,8 @@
-require 'http'
-require 'pdf-reader'
-require 'srd5_section/base'
-require 'srd5_section/races'
-require 'srd5_section/utility'
+require "http"
+require "pdf-reader"
+require "srd5_section/base"
+require "srd5_section/races"
+require "srd5_section/utility"
 
 SRD_OGL_NUM_PAGES = 403
 SRD_OGL_SOURCE_URL = "https://media.wizards.com/2016/downloads/DND/SRD-OGL_V5.1.pdf"
@@ -13,7 +13,6 @@ SRD_OGL_FILE_SHA256 = "d3f94417d2532f42a5abaec07e71a59007bf6cc46992c6458be6667f7
 namespace :fiveefyi do
   desc "Emit a formatted version of the SRD PDF into the public/srd folder"
   task :srd_write, [:pages] => :environment do |task_name, args|
-
     # 10 and 8 are sidebar title and sidebar text
     # 9 is ordinary text
     # 11 is a typo for 12
@@ -31,12 +30,12 @@ namespace :fiveefyi do
       def run_sort_val(run)
         run.y + (run.x < 325 ? 10000 : 0)
       end
-      
+
       def runs_in_columnar_order
-        @runs.
-          select { |r| r.y >= 90 }. # exclude page footer ("Not for resale" thru page number)
-          sort { |a,b| run_sort_val(a) <=> run_sort_val(b) }.
-          reverse # In a PDF, the y column extends from 0 up
+        @runs
+          .select { |r| r.y >= 90 } # exclude page footer ("Not for resale" thru page number)
+          .sort { |a, b| run_sort_val(a) <=> run_sort_val(b) }
+          .reverse # In a PDF, the y column extends from 0 up
       end
 
       def run_groups
@@ -59,7 +58,11 @@ namespace :fiveefyi do
     def get_reader
       if !srd_ogl_file_present?
         puts "Downloading the SRD OGL file..."
-        File.delete(SRD_OGL_FILE_NAME) rescue Errno::ENOENT
+        begin
+          File.delete(SRD_OGL_FILE_NAME)
+        rescue
+          Errno::ENOENT
+        end
         File.open(SRD_OGL_FILE_NAME, "wb") do |file|
           response = HTTP.get(SRD_OGL_SOURCE_URL)
           while partial = response.readpartial
@@ -76,9 +79,9 @@ namespace :fiveefyi do
 
     def get_page_list(args)
       return (1..SRD_OGL_NUM_PAGES).to_a if args.pages.nil?
-      [args.pages, args.extras].flatten.
-        map { |p| /^(\d+)-(\d+)/ =~ p ? ($1..$2).to_a : p }.flatten.compact.
-        map(&:to_i).sort.uniq
+      [args.pages, args.extras].flatten
+        .map { |p| /^(\d+)-(\d+)/ =~ p ? ($1..$2).to_a : p }.flatten.compact
+        .map(&:to_i).sort.uniq
     end
 
     def emit_stuff(reader, args)
@@ -101,7 +104,5 @@ namespace :fiveefyi do
 
     reader = get_reader
     emit_stuff(reader, args)
-
   end
-
 end
