@@ -60,8 +60,7 @@ namespace :fiveefyi do
         puts "Downloading the SRD OGL file..."
         begin
           File.delete(SRD_OGL_FILE_NAME)
-        rescue
-          Errno::ENOENT
+        rescue Errno::ENOENT
         end
         File.open(SRD_OGL_FILE_NAME, "wb") do |file|
           response = HTTP.get(SRD_OGL_SOURCE_URL)
