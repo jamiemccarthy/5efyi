@@ -82,10 +82,8 @@ module Srd5Section
     end
 
     def self.run_text_html(run)
-      run_text = nil
       run_text_clean = run_text_clean(run)
-      run_text_cap_sentence = nil
-      if matches = run_text_clean.match(/^(?<capsentence>(?:[A-Z][\w-]+)(?: [A-Z][\w-]+)*)(?<rest>\..*)$/)
+      if (matches = run_text_clean.match(/^(?<capsentence>(?:[A-Z][\w-]+)(?: [A-Z][\w-]+)*)(?<rest>\..*)$/))
         "</p><p><b>#{matches[:capsentence]}</b>#{matches[:rest]}"
       else
         run_text_clean
