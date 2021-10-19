@@ -3,5 +3,5 @@
   They will automatically be included in application.css.
 */
 ul {
-  list-style-type: upper-roman;
+  list-style-type: circle;
 }

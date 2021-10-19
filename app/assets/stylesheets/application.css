@@ -13,3 +13,16 @@
  *= require_tree .
  *= require_self
  */
+h1, h2, h3, h4 {
+	font-family: "Tinos", Times, serif;
+  font-variant: small-caps;
+}
+h1, h2 {
+  font-weight: bold;
+}
+h3 {
+  text-decoration: underline;
+}
+p {
+  font-family: "Tinos", Times, serif;
+}
