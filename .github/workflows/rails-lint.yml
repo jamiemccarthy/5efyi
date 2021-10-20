@@ -7,12 +7,13 @@ name: Build Rails and run linters
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, rails7, workflow-rails-lint ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, rails7, workflow-rails-lint ]
 jobs:
   run-lint:
-    runs-on: ubuntu-latest
+    # deployed on debian 10, which is an older release, like ubuntu 18
+    runs-on: ubuntu-18.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
