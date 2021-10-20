@@ -17,7 +17,7 @@ module Srd5Section
       puts "subclass: #{subclass}"
       begin
         Object.const_get("Srd5Section::#{subclass}")
-      rescue
+      rescue NameError
         nil || Srd5Section::Base
       end
     end
@@ -36,12 +36,12 @@ module Srd5Section
       section_title_runs.map { |run| run_text_clean(run) }.join(" ")
     end
 
-    def self.get_section_dir
+    def self.section_dir
       Dir.pwd
     end
 
     def self.get_section_filename(section_title)
-      title_to_filename(section_title, get_section_dir)
+      title_to_filename(section_title, section_dir)
     end
 
     def self.title_to_filename(title, dir)
@@ -98,8 +98,8 @@ module Srd5Section
     end
 
     def self.mkdirs
-      Dir.mkdir(get_section_dir, 0o755) unless Dir.exist?(get_section_dir)
-      abs_subdir = get_section_dir
+      Dir.mkdir(section_dir, 0o755) unless Dir.exist?(section_dir)
+      abs_subdir = section_dir
       subdirs.each do |subdir|
         abs_subdir = File.join(abs_subdir, subdir)
         Dir.mkdir(abs_subdir, 0o755) unless Dir.exist?(abs_subdir)
