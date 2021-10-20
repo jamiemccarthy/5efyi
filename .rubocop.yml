@@ -4,6 +4,7 @@ AllCops:
     - 'config/**/*'
     - 'script/**/*'
     - 'bin/*'
+    - 'vendor/**/*'
 
 Layout/MultilineMethodCallIndentation:
   Enabled: false
