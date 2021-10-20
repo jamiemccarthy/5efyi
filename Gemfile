@@ -39,7 +39,8 @@ group :development, :test do
   gem "bundler-audit", "~> 0.9.0"
   gem "byebug", "~> 11.1.3", platforms: [:mri, :mingw, :x64_mingw]
   gem "pdf-reader", "~> 2.4.2"
-  gem "standard", "~> 1.3.0"
+  gem "rubocop", "~> 1.20.0"
+  # gem "standard", "~> 1.3.0"
 end
 
 group :development do
