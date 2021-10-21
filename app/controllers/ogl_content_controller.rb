@@ -13,7 +13,7 @@ class OglContentController < ApplicationController
     end
   end
 
-  def is_ogl?
+  def ogl?
     true
   end
 

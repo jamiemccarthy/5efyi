@@ -5,10 +5,10 @@ require "srd5_section/races"
 require "srd5_section/utility"
 
 SRD_OGL_NUM_PAGES = 403
-SRD_OGL_SOURCE_URL = "https://media.wizards.com/2016/downloads/DND/SRD-OGL_V5.1.pdf"
+SRD_OGL_SOURCE_URL = "https://media.wizards.com/2016/downloads/DND/SRD-OGL_V5.1.pdf".freeze
 SRD_OGL_FILE_NAME = Rails.root.join("tmp", "SRD-OGL_V5.1.pdf")
-SRD_OGL_FILE_SIZE = 4857826
-SRD_OGL_FILE_SHA256 = "d3f94417d2532f42a5abaec07e71a59007bf6cc46992c6458be6667f7a9f1e34"
+SRD_OGL_FILE_SIZE = 4_857_826
+SRD_OGL_FILE_SHA256 = "d3f94417d2532f42a5abaec07e71a59007bf6cc46992c6458be6667f7a9f1e34".freeze
 
 class PDF::Reader::ColumnarPageLayout < PDF::Reader::PageLayout
   # Return the runs in the order generally used by the SRD,
@@ -16,7 +16,7 @@ class PDF::Reader::ColumnarPageLayout < PDF::Reader::PageLayout
   # we sort the left column "above" the right column. This
   # ignores the order defined by TextRun#<=>
   def run_sort_val(run)
-    run.y + (run.x < 325 ? 10000 : 0)
+    run.y + (run.x < 325 ? 10_000 : 0)
   end
 
   def runs_in_columnar_order
@@ -39,7 +39,7 @@ end
 
 namespace :fiveefyi do
   desc "Emit a formatted version of the SRD PDF into the public/srd folder"
-  task :srd_write, [:pages] => :environment do |task_name, args|
+  task :srd_write, [:pages] => :environment do |_, args|
     # 10 and 8 are sidebar title and sidebar text
     # 9 is ordinary text
     # 11 is a typo for 12
@@ -55,12 +55,13 @@ namespace :fiveefyi do
         Digest::SHA256.file(SRD_OGL_FILE_NAME) == SRD_OGL_FILE_SHA256
     end
 
-    def get_reader
+    def reader
       if !srd_ogl_file_present?
         puts "Downloading the SRD OGL file..."
         begin
           File.delete(SRD_OGL_FILE_NAME)
         rescue Errno::ENOENT
+          # file was not there
         end
         File.open(SRD_OGL_FILE_NAME, "wb") do |file|
           response = HTTP.get(SRD_OGL_SOURCE_URL)
@@ -68,9 +69,8 @@ namespace :fiveefyi do
             file.write partial
           end
         end
-        if !srd_ogl_file_present?
-          raise ArgumentError, "SRD OGL File was not successfully downloaded"
-        end
+        raise ArgumentError, "SRD OGL File was not successfully downloaded" if !srd_ogl_file_present?
+
         puts "Downloaded."
       end
       PDF::Reader.new(File.open(SRD_OGL_FILE_NAME, "rb"))
@@ -78,8 +78,9 @@ namespace :fiveefyi do
 
     def get_page_list(args)
       return (1..SRD_OGL_NUM_PAGES).to_a if args.pages.nil?
+
       [args.pages, args.extras].flatten
-        .map { |p| /^(\d+)-(\d+)/ =~ p ? ($1..$2).to_a : p }.flatten.compact
+        .map { |p| /^(\d+)-(\d+)/ =~ p ? (Regexp.last_match(1)..Regexp.last_match(2)).to_a : p }.flatten.compact
         .map(&:to_i).sort.uniq
     end
 
@@ -90,6 +91,7 @@ namespace :fiveefyi do
       pages.each_index do |page_num|
         next if page_num < 2
         next unless page_list.include? page_num
+
         receiver = PDF::Reader::ColumnarReceiver.new
         pages[page_num].walk(receiver)
         run_groups.concat(receiver.two_column_run_groups)
@@ -101,7 +103,6 @@ namespace :fiveefyi do
       end
     end
 
-    reader = get_reader
     emit_stuff(reader, args)
   end
 end

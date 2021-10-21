@@ -35,7 +35,8 @@ gem "http", "~> 5.0.4"
 gem "lograge", "~> 0.11"
 
 group :development, :test do
-  # Call "byebug" anywhere in the code to stop execution and get a debugger console
+  gem "brakeman", "~> 5.1.1"
+  gem "bundler-audit", "~> 0.9.0"
   gem "byebug", "~> 11.1.3", platforms: [:mri, :mingw, :x64_mingw]
   gem "pdf-reader", "~> 2.4.2"
   gem "standard", "~> 1.3.0"
