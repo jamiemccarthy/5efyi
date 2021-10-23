@@ -1,4 +1,4 @@
-require 'srd5_section/base'
+require "srd5_section/base"
 
 module Srd5Section
   class Races < Base

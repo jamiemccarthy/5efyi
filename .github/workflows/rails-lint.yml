@@ -1,0 +1,30 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+# This workflow will download a prebuilt Ruby version, install dependencies, and  run linters
+name: Build Rails and run linters
+
+on: [push, pull_request]
+jobs:
+  run-lint:
+    # deployed on debian 10, which is an older release, like ubuntu 18
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Setup Ruby and install gems
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+      - name: Run linters
+        run: |
+          bundle exec rubocop --parallel
+      # TODO putting external-database checks into CI is Bad, Actually.
+      # New vulns shouldn't break the build. Figure out a better approach.
+      # Check upstream to see if GitHubfixed this, maybe open a PR if not.
+      # I got it from here: https://github.com/actions/starter-workflows/blob/700743e33258dd9548184fb98497da9fb75c5b31/ci/rubyonrails-lint.yml
+      - name: Run security checks
+        run: |
+          bundle exec bundler-audit --update
+          bundle exec brakeman -q -w2

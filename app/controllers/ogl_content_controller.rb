@@ -13,7 +13,7 @@ class OglContentController < ApplicationController
     end
   end
 
-  def is_ogl?
+  def ogl?
     true
   end
 
@@ -31,7 +31,7 @@ class OglContentController < ApplicationController
   def ogl_file_abspath
     ogl_name = ogl_content_params["ogl_name"]
     ogl_file_abspath = ogl_name ? Rails.public_path.join("srd", ogl_name) : nil
-    (ogl_file_abspath && File.exists?(ogl_file_abspath)) ? ogl_file_abspath : nil
+    ogl_file_abspath && File.exist?(ogl_file_abspath) ? ogl_file_abspath : nil
   end
 
   def ogl_content_params
