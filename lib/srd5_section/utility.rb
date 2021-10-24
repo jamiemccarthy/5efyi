@@ -1,6 +1,5 @@
 module Srd5Section
   module Utility
-
     def self.break_into_sections(run_groups)
       sections = [[]]
       current = nil
@@ -16,12 +15,13 @@ module Srd5Section
           end
           # skip appending "Monsters (Z)" anywhere, it doesn't make sense for a website
         elsif monsters_index && current == "Monsters, Each" && run_group[0].font_size < 25
-          if run_group[0].font_size == 13
+          case run_group[0].font_size
+          when 13
             # e.g. "Angels", a monster descriptor
             category = run_group[0].text
             puts "category: #{category}"
             sections[monsters_index].concat(run_group)
-          elsif run_group[0].font_size == 12
+          when 12
             # e.g. "Aboleth", an actual monster
             # First put the name of the monster onto the Monsters page (we'll figure
             # out what to do with these later)
@@ -39,14 +39,14 @@ module Srd5Section
         elsif run_group[0].font_size == 25
           if current == "Monsters"
             # time to move on to the appendixes, right? check what this run is
-            #byebug
+            # byebug
           end
           current = run_group[0].text
           category = nil
           monsters_index = nil
           sections << []
           if current == "Monsters"
-            monsters_index = sections.count-1
+            monsters_index = sections.count - 1
           end
         end
         sections[-1].concat(run_group)

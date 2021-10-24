@@ -24,11 +24,10 @@ module Srd5Section
     def self.get_section_title_runs(section_runs)
       puts "get_section_title_runs passed #{section_runs.count}, first: #{section_runs[0].text.strip}"
       runs = section_runs.select { |run| run_break_required?(run) } || section_runs[0]
+      # Skip the introduction
       # TODO do we need the "&."s here? I doubt it
-      if runs[0]&.text&.match?(/If\s+you\s+note\s+any\s+errors\s+in\s+this/)
-        # Skip the introduction
-        return nil
-      end
+      return nil if runs[0]&.text&.match?(/If\s+you\s+note\s+any\s+errors\s+in\s+this/)
+
       runs
     end
 
