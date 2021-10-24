@@ -4,8 +4,7 @@ module Srd5Section
 
     def self.create(section_runs)
       section_title_runs = get_section_title_runs(section_runs)
-      # Skip any initial section that lacks a title ("If you note any errors...")
-      return nil unless section_title_runs.count > 0
+      return nil unless section_title_runs
 
       get_subclass(section_title_runs).new(section_runs)
     end
@@ -23,7 +22,14 @@ module Srd5Section
     end
 
     def self.get_section_title_runs(section_runs)
-      section_runs.select { |run| run_break?(run) }
+      puts "get_section_title_runs passed #{section_runs.count}, first: #{section_runs[0].text.strip}"
+      runs = section_runs.select { |run| run_break_required?(run) } || section_runs[0]
+      # TODO do we need the "&."s here? I doubt it
+      if runs[0]&.text&.match?(/If\s+you\s+note\s+any\s+errors\s+in\s+this/)
+        # Skip the introduction
+        return nil
+      end
+      runs
     end
 
     def initialize(section_runs)
@@ -48,6 +54,8 @@ module Srd5Section
       filename = title.downcase.gsub(/[\s_:-]+/m, "-")
       filename.gsub!(/^-+/, "")
       filename.gsub!(/-+$/, "")
+      return nil if filename.blank?
+
       File.join(dir, subdirs, filename)
     end
 
@@ -107,6 +115,8 @@ module Srd5Section
     end
 
     def write_file
+      return nil if section_filename.blank?
+
       self.class.mkdirs
       File.open(section_filename, "w", 0o644) do |io|
         io.write(
@@ -120,8 +130,8 @@ module Srd5Section
       end
     end
 
-    def self.run_break?(run)
-      # Should we break to a new page starting with this run?
+    def self.run_break_required?(run)
+      # Is a break to a new page starting with this run required?
       run.font_size >= 25
     end
   end
