@@ -17,16 +17,17 @@ module Srd5Section
       begin
         Object.const_get("Srd5Section::#{subclass}")
       rescue NameError
-        nil || Srd5Section::Base
+        Srd5Section::Base
       end
     end
 
     def self.get_section_title_runs(section_runs)
       puts "get_section_title_runs passed #{section_runs.count}, first: #{section_runs[0].text.strip}"
-      runs = section_runs.select { |run| run_break_required?(run) } || section_runs[0]
+      runs = section_runs.select { |run| run_break_required?(run) }
+      runs = [section_runs[0]] if runs.blank?
       # Skip the introduction
       # TODO do we need the "&."s here? I doubt it
-      return nil if runs[0]&.text&.match?(/If\s+you\s+note\s+any\s+errors\s+in\s+this/)
+      return nil if runs[0]&.text&.match?(/If.{3,5}you.{3,5}note.{3,5}any.{3,5}errors.{3,5}in.{3,5}this/)
 
       runs
     end
@@ -50,9 +51,10 @@ module Srd5Section
     end
 
     def self.title_to_filename(title, dir)
-      filename = title.downcase.gsub(/[\s_:-]+/m, "-")
+      filename = title.downcase.gsub(/[[[:space:]][[:punct:]]]+/m, "-")
       filename.gsub!(/^-+/, "")
       filename.gsub!(/-+$/, "")
+      filename.squeeze!("-")
       return nil if filename.blank?
 
       File.join(dir, subdirs, filename)
