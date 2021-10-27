@@ -38,6 +38,9 @@ group :development, :test do
   gem "brakeman", "~> 5.1.1"
   gem "bundler-audit", "~> 0.9.0"
   gem "byebug", "~> 11.1.3", platforms: [:mri, :mingw, :x64_mingw]
+  # pdf-reader 2.5.0 is available; its output diff adds some extranous
+  # spaces that I'm already trying to get rid of, and corrects
+  # line order in at least one place. Worth looking into.
   gem "pdf-reader", "~> 2.4.2"
   gem "standard", "~> 1.3.0"
 end
