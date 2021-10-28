@@ -37,7 +37,7 @@ module Srd5Section
             # If it's the first monster NOT in the previous category, now's a good time
             # to set category back to nil. I guess hard-code the list of "first monsters
             # not in the previous category" :/
-            if %W(
+            if %w[
               Ankheg
               Doppelganger
               Drider
@@ -54,7 +54,7 @@ module Srd5Section
               Specter
               Sprite
               Wight
-              ).any? { |monster| run_group[0].text.match? monster }
+            ].any? { |monster| run_group[0].text.match? monster }
               category = nil
             end
           end

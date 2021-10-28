@@ -37,7 +37,7 @@ Metrics/PerceivedComplexity:
   Max: 50
 
 Metrics/MethodLength:
-  Max: 50
+  Max: 75
 
 Metrics/BlockLength:
   Max: 75
