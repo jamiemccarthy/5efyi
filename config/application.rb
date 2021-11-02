@@ -31,6 +31,8 @@ module Fiveefyi
 
     config.time_zone = "UTC"
 
+    # Because lib/ is home to tasks and the classes used only by tasks,
+    # which the web server doesn't need, it's not eager_load'ed.
     config.autoload_paths << Rails.root.join("lib")
   end
 end

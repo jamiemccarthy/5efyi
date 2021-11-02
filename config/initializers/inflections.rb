@@ -10,7 +10,7 @@
 #   inflect.uncountable %w( fish sheep )
 # end
 
-# These inflection rules are supported but not enabled by default:
+# This is so Zeitwerk can find (my overrides of) the classes in lib/pdf/
 ActiveSupport::Inflector.inflections(:en) do |inflect|
   inflect.acronym "PDF"
 end
