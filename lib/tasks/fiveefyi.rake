@@ -1,8 +1,5 @@
 require "http"
 require "pdf-reader"
-require "srd5_section/base"
-require "srd5_section/races"
-require "srd5_section/utility"
 
 SRD_OGL_NUM_PAGES = 403
 SRD_OGL_SOURCE_URL = "https://media.wizards.com/2016/downloads/DND/SRD-OGL_V5.1.pdf".freeze
