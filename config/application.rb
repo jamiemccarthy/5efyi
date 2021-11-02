@@ -32,6 +32,5 @@ module Fiveefyi
     config.time_zone = "UTC"
 
     config.autoload_paths << Rails.root.join("lib")
-    config.eager_load_paths << Rails.root.join("lib")
   end
 end
