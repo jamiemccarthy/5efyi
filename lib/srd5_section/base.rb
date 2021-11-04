@@ -12,7 +12,7 @@ module Srd5Section
     def self.get_subclass(section_title_runs)
       # TODO: fix this, it doesn't work for e.g. "Beyond 1st level" or "Using abilityScores"
       # or "Appendix ph-b:Fantasy-historicalPantheons" haha
-      subclass = section_title_runs.map { |run| run_text_clean(run).downcase.capitalize }.join("")
+      subclass = section_title_runs.map { |run| run_text_clean(run).downcase.capitalize }.join
       puts "subclass: #{subclass}"
       begin
         Object.const_get("Srd5Section::#{subclass}")

@@ -6,10 +6,10 @@ class OglContentController < ApplicationController
 
   def show
     expires_in 24.hours, public: true
-    if !ogl_file_abspath
-      render status: :not_found, html: "Not found"
-    else
+    if ogl_file_abspath
       fresh_when(last_modified: ogl_file_last_modified)
+    else
+      render status: :not_found, html: "Not found"
     end
   end
 
