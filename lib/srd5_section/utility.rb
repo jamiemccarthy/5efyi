@@ -1,3 +1,7 @@
+# My PDF::Reader::ColumnarPageLayout defines a #run_groups method which groups the
+# runs of <https://github.com/yob/pdf-reader/blob/v2.4.2/lib/pdf/reader/page_layout.rb#L20>
+# into arrays. Each run_group is an array of runs that all have the same font size.
+
 module Srd5Section
   module Utility
     def self.break_into_sections(run_groups)
@@ -73,7 +77,11 @@ module Srd5Section
         end
         sections[-1].concat(run_group)
       end
+
       sections
+        .select { |section_runs| section_runs.count > 0 }
+        .map { |section_runs| Srd5Section::Base.create(section_runs) }
+        .compact
     end
   end
 end
