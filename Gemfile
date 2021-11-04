@@ -42,7 +42,7 @@ group :development, :test do
   # spaces that I'm already trying to get rid of, and corrects
   # line order in at least one place. Worth looking into.
   gem "pdf-reader", "~> 2.4.2"
-  gem "standard", "~> 1.3.0"
+  gem "standard", "~> 1.4.0"
 end
 
 group :development do
