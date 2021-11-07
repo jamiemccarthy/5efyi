@@ -67,7 +67,6 @@ namespace :fiveefyi do
         run_groups.concat(receiver.two_column_run_groups)
       end
       sections = Srd5Section::Utility.break_into_sections(run_groups)
-      sections = sections.compact.select { |section| section.section_runs.count > 0 }
       sections.each(&:write_file)
     end
 
