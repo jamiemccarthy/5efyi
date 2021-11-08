@@ -68,11 +68,12 @@ module Srd5Section
     #   get_subclass(section_title_runs).new(section_runs)
     # end
 
-    def section_title_runs(section_runs)
-      puts "get_section_title_runs passed #{section_runs.count}, first: #{section_runs[0].text.strip}"
+    def section_title_runs
+      puts "section_title_runs with #{section_runs.count} section_runs, first: #{section_runs[0]&.text&.strip}"
+      byebug
       runs = section_runs.select { |run| run_break_required?(run) }
       runs = [section_runs[0]] if runs.blank?
-      # Skip the introduction
+      # Skip the introduction <- TODO I think I handled this elsewhere now
 
       runs
     end
@@ -83,7 +84,7 @@ module Srd5Section
     #   @section_filename = self.class.get_section_filename(section_title)
     # end
 
-    def self.get_section_title(section_title_runs)
+    def self.get_section_title
       section_title_runs.map { |run| run_text_clean(run) }.join(" ")
     end
 
