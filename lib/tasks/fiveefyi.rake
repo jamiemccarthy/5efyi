@@ -66,7 +66,7 @@ namespace :fiveefyi do
         pages[page_num].walk(receiver)
         run_groups.concat(receiver.two_column_run_groups)
       end
-      sections = Srd5Section::Utility.break_into_sections(run_groups)
+      sections = Srd5Section::Utility.get_class_thingys(run_groups)
       sections.each(&:write_file)
     end
 

@@ -4,16 +4,23 @@
 
 module Srd5Section
   module Utility
-    def self.break_into_sections(run_groups)
-      sections = [[]]
+    def self.get_class_thingys(run_groups)
+
+      thingys = [ Srd5Section::Base.new ]
       current = nil
       category = nil
       monsters_index = nil
-      run_groups.each do |run_group|
-        # Strip out initial blank runs that have only whitespace and U+00A0, "No-Break Space"
-        run_group.shift while run_group.count > 0 && run_group[0].text.match?(/\A[\s\u00a0]*\z/)
-        next if run_group.count < 1
 
+      run_groups.each do |run_group|
+        byebug
+        if thingys[-1].is_title_run_group?(run_group)
+          thingys.push Srd5Section::Base.new
+        end
+        new_thing = thingys[-1].append(run_group)
+        thingys[-1] = new_thing
+
+if 0
+        # TODO move this logic into the class hierarchy
         if current == "Monsters"
           if run_group[0].font_size == 18 && run_group[0].text.match?(/Monsters \([A-Z]\)/)
             current = "Monsters, Each"
@@ -75,13 +82,10 @@ module Srd5Section
             monsters_index = sections.count - 1
           end
         end
-        sections[-1].concat(run_group)
       end
+end
 
-      sections
-        .select { |section_runs| section_runs.count > 0 }
-        .map { |section_runs| Srd5Section::Base.create(section_runs) }
-        .compact
+      thingys
     end
   end
 end

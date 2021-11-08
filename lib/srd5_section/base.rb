@@ -2,41 +2,86 @@ module Srd5Section
   class Base
     attr_accessor :section_runs, :section_title, :section_filename
 
-    def self.create(section_runs)
-      section_title_runs = get_section_title_runs(section_runs)
-      return nil unless section_title_runs
-
-      get_subclass(section_title_runs).new(section_runs)
-    end
-
-    def self.get_subclass(section_title_runs)
-      # TODO: fix this, it doesn't work for e.g. "Beyond 1st level" or "Using abilityScores"
-      # or "Appendix ph-b:Fantasy-historicalPantheons" haha
-      subclass = section_title_runs.map { |run| run_text_clean(run).downcase.capitalize }.join
-      puts "subclass: #{subclass}"
-      begin
-        Object.const_get("Srd5Section::#{subclass}")
-      rescue NameError
-        Srd5Section::Base
+    def initialize(old_obj = nil)
+      if old_obj
+        section_runs = old_obj.section_runs
+        section_title = old_obj.section_title
+        section_filename = old_obj.section_filename
       end
     end
 
-    def self.get_section_title_runs(section_runs)
+    def inspect
+      "#{section_runs&.count}: #{section_runs&.map(&:font_size)&.join(' ')}"
+    end
+
+    def is_title_run_group?(run_group)
+      run_group[0].font_size == 25
+    end
+
+    def should_write?
+      section_filename.present? && section_runs.present?
+    end
+
+    def get_proper_class
+      # TODO: nope, this is wrong, many runs will have multiple section_title runs,
+      # and we shouldn't reclass as soon as we have the first one, not without
+      # adding some "business" logic to this.
+      self.class if section_title_runs.blank?
+
+      # TODO: fix this, it doesn't work for e.g. "Beyond 1st level" or "Using abilityScores"
+      # or "Appendix ph-b:Fantasy-historicalPantheons" haha
+      if runs[0]&.text&.match?(/If.{3,5}you.{3,5}note.{3,5}any.{3,5}errors.{3,5}in.{3,5}this/)
+        subclass = Srd5Section::Null
+      else
+        subclass = section_title_runs.map { |run| run_text_clean(run).downcase.capitalize }.join
+      end
+
+      begin
+        Object.const_get("Srd5Section::#{subclass}")
+      rescue NameError
+        self.class
+      end
+    end
+
+    def update_class!
+      # TODO optimize this, don't call it for every run group
+      new_class = get_proper_class
+      if new_class == self.class
+        self
+      else
+        new_class.new(self)
+      end
+    end
+
+    def append(section_run)
+      section_run.shift while section_run.count > 0 && section_run[0].text.match?(/\A[\s\u00a0]*\z/)
+      section_runs ||= []
+      section_runs << section_run
+
+      update_class!
+    end
+
+    # def self.create(section_runs)
+    #   section_title_runs = get_section_title_runs(section_runs)
+    #   return nil unless section_title_runs
+    # 
+    #   get_subclass(section_title_runs).new(section_runs)
+    # end
+
+    def section_title_runs(section_runs)
       puts "get_section_title_runs passed #{section_runs.count}, first: #{section_runs[0].text.strip}"
       runs = section_runs.select { |run| run_break_required?(run) }
       runs = [section_runs[0]] if runs.blank?
       # Skip the introduction
-      # TODO do we need the "&."s here? I doubt it
-      return nil if runs[0]&.text&.match?(/If.{3,5}you.{3,5}note.{3,5}any.{3,5}errors.{3,5}in.{3,5}this/)
 
       runs
     end
 
-    def initialize(section_runs)
-      @section_runs = section_runs
-      @section_title = self.class.get_section_title(self.class.get_section_title_runs(section_runs))
-      @section_filename = self.class.get_section_filename(section_title)
-    end
+    # def initialize(section_runs)
+    #   @section_runs = section_runs
+    #   @section_title = self.class.get_section_title(self.class.get_section_title_runs(section_runs))
+    #   @section_filename = self.class.get_section_filename(section_title)
+    # end
 
     def self.get_section_title(section_title_runs)
       section_title_runs.map { |run| run_text_clean(run) }.join(" ")
@@ -116,7 +161,7 @@ module Srd5Section
     end
 
     def write_file
-      return nil if section_filename.blank?
+      return nil unless should_write?
 
       self.class.mkdirs
       File.open(section_filename, "w", 0o644) do |io|
