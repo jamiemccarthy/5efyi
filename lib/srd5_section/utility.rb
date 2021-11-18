@@ -4,22 +4,13 @@
 
 module Srd5Section
   module Utility
-    def self.get_class_thingys(run_groups)
+    def self.get_sections(run_groups)
 
-      thingys = [ Srd5Section::Base.new ]
+      section_list = Srd5SectionList.new_from_run_groups(run_groups)
       current = nil
       category = nil
       monsters_index = nil
 
-      run_groups.each do |run_group|
-        byebug
-        if thingys[-1].is_title_run_group?(run_group)
-          thingys.push Srd5Section::Base.new
-        end
-        new_thing = thingys[-1].append(run_group)
-        thingys[-1] = new_thing
-
-if 0
         # TODO move this logic into the class hierarchy
         if current == "Monsters"
           if run_group[0].font_size == 18 && run_group[0].text.match?(/Monsters \([A-Z]\)/)
@@ -83,9 +74,8 @@ if 0
           end
         end
       end
-end
 
-      thingys
+      sections
     end
   end
 end

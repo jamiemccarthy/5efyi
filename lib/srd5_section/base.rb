@@ -1,21 +1,44 @@
+# An Srd5Section ("section") corresponds to a webpage in the srd5 dir of the website.
+# Some sections are subclasses of this base class and behave differently.
+# A section knows how to write out its static webpage.
+# A section is built by appending run_groups to it, TKTK
+
 module Srd5Section
   class Base
+
+    # section_runs is an Array of PDF::Reader::TextRun's, specifically of
+    # PDF::Reader::Srd5TextRun's.
     attr_accessor :section_runs, :section_title, :section_filename
 
     def initialize(old_obj = nil)
       if old_obj
-        section_runs = old_obj.section_runs
-        section_title = old_obj.section_title
-        section_filename = old_obj.section_filename
+        @section_runs = old_obj.section_runs
+        @section_title = old_obj.section_title
+        @section_filename = old_obj.section_filename
+      else
+        @section_runs = []
+        @section_title = nil
+        @section_filename = nil
       end
     end
 
     def inspect
-      "#{section_runs&.count}: #{section_runs&.map(&:font_size)&.join(' ')}"
+      "[#{section_runs.count}]: #{section_runs.map(&:short_inspect).join(' ')}"
     end
 
-    def is_title_run_group?(run_group)
-      run_group[0].font_size == 25
+    def short_inspect
+      "[#{section_runs.count}]: #{section_runs.first(10).map(&:short_inspect).join(' ')}"
+    end
+
+    # TODO hm maybe make this return symbols depending on size
+    def is_title_run?(run)
+      run.font_size >= 25
+    end
+
+    def want_this_run_group?(run_group)
+      # Does this section want to append this run group or should it go
+      # elsewhere?
+      run_group[0].font_size < 25
     end
 
     def should_write?
@@ -30,10 +53,10 @@ module Srd5Section
 
       # TODO: fix this, it doesn't work for e.g. "Beyond 1st level" or "Using abilityScores"
       # or "Appendix ph-b:Fantasy-historicalPantheons" haha
-      if runs[0]&.text&.match?(/If.{3,5}you.{3,5}note.{3,5}any.{3,5}errors.{3,5}in.{3,5}this/)
+      if self.section_runs[0]&.text&.match?(/If.{3,5}you.{3,5}note.{3,5}any.{3,5}errors.{3,5}in.{3,5}this/)
         subclass = Srd5Section::Null
       else
-        subclass = section_title_runs.map { |run| run_text_clean(run).downcase.capitalize }.join
+        subclass = section_title_runs.map { |run| run.text_clean.downcase.capitalize }.join
       end
 
       begin
@@ -53,10 +76,9 @@ module Srd5Section
       end
     end
 
-    def append(section_run)
-      section_run.shift while section_run.count > 0 && section_run[0].text.match?(/\A[\s\u00a0]*\z/)
-      section_runs ||= []
-      section_runs << section_run
+    def append_run_group(run_group)
+      run_group.shift while run_group.count > 0 && run_group[0].text.match?(/\A[\s\u00a0]*\z/)
+      self.section_runs += run_group
 
       update_class!
     end
@@ -69,10 +91,9 @@ module Srd5Section
     # end
 
     def section_title_runs
-      puts "section_title_runs with #{section_runs.count} section_runs, first: #{section_runs[0]&.text&.strip}"
-      byebug
-      runs = section_runs.select { |run| run_break_required?(run) }
-      runs = [section_runs[0]] if runs.blank?
+      # puts "section_title_runs with: #{self.inspect}"
+      runs = self.section_runs.select { |run| is_title_run?(run) }
+      runs = [self.section_runs[0]] if runs.blank?
       # Skip the introduction <- TODO I think I handled this elsewhere now
 
       runs
@@ -85,7 +106,7 @@ module Srd5Section
     # end
 
     def self.get_section_title
-      section_title_runs.map { |run| run_text_clean(run) }.join(" ")
+      section_title_runs.map { |run| run.text_clean }.join(" ")
     end
 
     def self.section_dir
@@ -110,14 +131,6 @@ module Srd5Section
       ["public", "srd"]
     end
 
-    def self.run_text_clean(run)
-      run_text = run.text.dup
-      run_text.gsub!(/[\s\u00a0]+/, " ") # if new_font_size < 10 ??
-      run_text.gsub!(/\s*-\u00ad\u2010\u2011?\s*/, "-")
-      run_text.strip!
-      run_text
-    end
-
     def self.section_runs_tag(runs)
       # 10 and 8 are sidebar title and sidebar text
       # 9 is ordinary text
@@ -134,18 +147,6 @@ module Srd5Section
       when 25 then "h1"
       else "p"
       end
-    end
-
-    def self.run_text_html(run)
-      run_text_clean = run_text_clean(run)
-      if (matches = run_text_clean.match(/^(?<capsentence>(?:[A-Z][\w-]+)(?: [A-Z][\w-]+)*)(?<rest>\..*)$/))
-        "</p><p><b>#{matches[:capsentence]}</b>#{matches[:rest]}"
-      else
-        run_text_clean
-      end
-      # TODO check for "\t" leading run.text followed by a short sentence
-      # with capitalized words ending in a period. If so, bold it and add
-      # a paragraph break
     end
 
     def section_runs_by_size
@@ -170,16 +171,11 @@ module Srd5Section
           section_runs_by_size.map do |runs|
             tag = self.class.section_runs_tag(runs)
             "<#{tag}>" +
-              runs.map { |run| self.class.run_text_html(run) }.join("\n") +
+              runs.map { |run| run.text_html }.join("\n") +
               "</#{tag}>"
           end.join("\n")
         )
       end
-    end
-
-    def self.run_break_required?(run)
-      # Is a break to a new page starting with this run required?
-      run.font_size >= 25
     end
   end
 end
