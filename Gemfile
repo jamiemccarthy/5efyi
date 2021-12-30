@@ -12,7 +12,7 @@ gem "puma", "~> 5.5.1"
 # Manage modern JavaScript using ESM without transpiling or bundling
 gem "importmap-rails", ">= 0.3.4"
 # Hotwire's SPA-like page accelerator. Read more: https://turbo.hotwired.dev
-gem "turbo-rails", ">= 0.7.4"
+gem "turbo-rails", ">= 1.0.0"
 # Hotwire's modest JavaScript framework for the HTML you already have. Read more: https://stimulus.hotwired.dev
 gem "stimulus-rails", ">= 0.3.9"
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
