@@ -6,13 +6,13 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 ruby "3.0.1"
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails', branch: 'main'
-gem "rails", "~> 7.0.0.alpha2"
+gem "rails", "~> 7.0.0"
 # Use Puma as the app server
 gem "puma", "~> 5.5.1"
 # Manage modern JavaScript using ESM without transpiling or bundling
 gem "importmap-rails", ">= 0.3.4"
 # Hotwire's SPA-like page accelerator. Read more: https://turbo.hotwired.dev
-gem "turbo-rails", ">= 0.7.4"
+gem "turbo-rails", ">= 1.0.0"
 # Hotwire's modest JavaScript framework for the HTML you already have. Read more: https://stimulus.hotwired.dev
 gem "stimulus-rails", ">= 0.3.9"
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
