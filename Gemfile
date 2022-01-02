@@ -5,10 +5,14 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
 ruby "3.0.1"
 
-# Bundle edge Rails instead: gem 'rails', github: 'rails/rails', branch: 'main'
-gem "rails", "~> 7.0.0"
+# Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
+gem "rails", github: "rails/rails", branch: "7-0-stable"
+
+# The original asset pipeline for Rails [https://github.com/rails/sprockets-rails]
+gem "sprockets-rails"
+
 # Use Puma as the app server
-gem "puma", "~> 5.5.1"
+gem "puma", "~> 5.5"
 # Manage modern JavaScript using ESM without transpiling or bundling
 gem "importmap-rails", ">= 0.3.4"
 # Hotwire's SPA-like page accelerator. Read more: https://turbo.hotwired.dev
@@ -20,18 +24,15 @@ gem "jbuilder", "~> 2.7"
 # Use Redis adapter to run Action Cable in production
 # gem "redis", "~> 4.0"
 
-# Use Sass to process CSS
-# gem "sassc-rails", "~> 2.1"
-
 # Use Tailwind CSS. See: https://github.com/rails/tailwindcss-rails
-# gem "tailwindcss-rails", "~> 0.4.3"
+gem "tailwindcss-rails"
 
 # Use Active Model has_secure_password
 # gem "bcrypt", "~> 3.1.7"
 
 # Used by my application
 gem "health_check", "~> 3.1"
-gem "http", "~> 5.0.4"
+gem "http", "~> 5.0"
 gem "lograge", "~> 0.11"
 
 group :development, :test do
