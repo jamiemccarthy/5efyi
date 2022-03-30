@@ -12,7 +12,7 @@ gem "rails", "~> 7.0.0"
 gem "sprockets-rails"
 
 # Use Puma as the app server
-gem "puma", "~> 5.6.2"
+gem "puma", "~> 5.6.4"
 # Manage modern JavaScript using ESM without transpiling or bundling
 gem "importmap-rails", ">= 0.3.4"
 # Hotwire's SPA-like page accelerator. Read more: https://turbo.hotwired.dev
